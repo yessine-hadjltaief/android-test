@@ -1,39 +1,19 @@
-pipeline {
-    agent any
+stage('Check Android Environment') {
+    steps {
+        sh '''
+            echo "User:"
+            whoami
 
-    stages {
+            echo "ANDROID_HOME:"
+            echo $ANDROID_HOME
 
-        stage('Build APK') {
-            steps {
-                sh '''
-                    chmod +x gradlew
-                    ./gradlew clean assembleDebug
-                '''
-            }
-        }
+            echo "ADB:"
+            which adb
 
-        stage('Check Cuttlefish') {
-            steps {
-                sh '''
-                    adb wait-for-device
-                    adb devices
-                '''
-            }
-        }
+            adb version
 
-        stage('Install APK') {
-            steps {
-                sh '''
-                    adb install -r app/build/outputs/apk/debug/app-debug.apk
-                '''
-            }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'app/build/outputs/apk/debug/*.apk',
-                             fingerprint: true
-        }
+            echo "SDK:"
+            ls -la $ANDROID_HOME
+        '''
     }
 }
